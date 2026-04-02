@@ -7,6 +7,7 @@ import 'package:tinysteps/features/admin/screens/users_screen.dart';
 import 'package:tinysteps/features/admin/screens/classrooms_screen.dart';
 import 'package:tinysteps/features/admin/screens/children_overview_screen.dart';
 import 'package:tinysteps/features/admin/screens/admin_settings_screen.dart';
+import 'package:tinysteps/core/widgets/logout_dialog.dart';
 
 /// Admin Home Screen — shell with bottom navigation
 class AdminHomeScreen extends StatefulWidget {
@@ -89,26 +90,9 @@ class _AdminDashboardContentState extends State<_AdminDashboardContent> {
   }
 
   Future<void> _signOut() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgLight,
-        surfaceTintColor: Colors.transparent,
-        title: Text('Sign out?', style: AppTextStyles.heading3),
-        content: Text('You will be returned to the login screen.', style: AppTextStyles.bodyMedium),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text('Cancel', style: AppTextStyles.labelBold.copyWith(color: AppColors.textMuted))),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Sign out', style: AppTextStyles.buttonLabel),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true) {
+    final confirm = await showLogoutDialog(context);
+
+    if (confirm) {
       await _supabase.auth.signOut();
     }
   }
@@ -147,8 +131,10 @@ class _AdminDashboardContentState extends State<_AdminDashboardContent> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Hello, $name 👋', style: AppTextStyles.heading1),
-              Text('Here\'s your daycare at a glance',
-                  style: AppTextStyles.bodyMuted),
+              Text(
+                'Here\'s your daycare at a glance',
+                style: AppTextStyles.bodyMuted,
+              ),
               const SizedBox(height: AppSpacing.xl),
 
               // ── Stats Grid ──────────────────────────────────────────
@@ -160,11 +146,13 @@ class _AdminDashboardContentState extends State<_AdminDashboardContent> {
                       child: Padding(
                         padding: EdgeInsets.all(AppSpacing.xl),
                         child: CircularProgressIndicator(
-                            color: AppColors.primary),
+                          color: AppColors.primary,
+                        ),
                       ),
                     );
                   }
-                  final stats = snapshot.data ??
+                  final stats =
+                      snapshot.data ??
                       {
                         'teachers': 0,
                         'pendingTeachers': 0,
@@ -264,9 +252,10 @@ class _StatCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.lg),
           boxShadow: [
             BoxShadow(
-                color: color.withValues(alpha: 0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 3)),
+              color: color.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
           ],
         ),
         child: Column(
@@ -274,8 +263,7 @@ class _StatCard extends StatelessWidget {
           children: [
             Icon(icon, color: color),
             const SizedBox(height: AppSpacing.sm),
-            Text(value,
-                style: AppTextStyles.heading1.copyWith(color: color)),
+            Text(value, style: AppTextStyles.heading1.copyWith(color: color)),
             Text(label, style: AppTextStyles.bodyMuted),
           ],
         ),
